@@ -639,17 +639,29 @@ document.addEventListener("click", (e) => {
 $("#reviewModalClose").addEventListener("click", closeReviewModal);
 reviewModal.addEventListener("click", (e) => { if (e.target === reviewModal) closeReviewModal(); });
 
-/* ---------------- book waitlist ---------------- */
+/* ---------------- playbook notify form ---------------- */
 
-const bookWaitlistEl = document.getElementById("bookWaitlist");
-if (bookWaitlistEl) {
-  bookWaitlistEl.addEventListener("change", () => {
-    state.bookWaitlist = bookWaitlistEl.checked;
-    saveState();
-    if (bookWaitlistEl.checked) {
-      trackEvent("book_waitlist_joined", {});
-      submitLead({ ...(state.lead || {}), bookWaitlist: true });
+const playbookForm = document.getElementById("playbookForm");
+if (playbookForm) {
+  playbookForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const phone = document.getElementById("pb-phone").value.trim();
+    const email = document.getElementById("pb-email").value.trim();
+    const errorEl = document.getElementById("pbFormError");
+    if (!phone && !email) {
+      errorEl.textContent = "Enter a phone number or an email address.";
+      return;
     }
+    errorEl.textContent = "";
+    state.bookWaitlist = true;
+    saveState();
+    trackEvent("book_waitlist_joined", { hasPhone: !!phone, hasEmail: !!email });
+    submitLead({ ...(state.lead || {}), bookWaitlist: true, bookPhone: phone || null, bookEmail: email || null });
+
+    const wrap = document.getElementById("playbookFormWrap");
+    wrap.innerHTML = `
+      <p class="playbook-form__success">You're on the list! We'll message you the moment The Exhibition ROI Playbook launches.</p>
+    `;
   });
 }
 

@@ -42,6 +42,8 @@ function doPost(e) {
     open_leads: (data.qualification && data.qualification.openLeads) || "",
     help_required: data.helpRequired || "",
     book_waitlist: data.bookWaitlist || "",
+    book_phone: data.bookPhone || "",
+    book_email: data.bookEmail || "",
     roi_review_requested: data.roiReviewRequested || "",
     utm_source: data.utmSource || "",
     utm_campaign: data.utmCampaign || "",
