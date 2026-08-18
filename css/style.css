@@ -248,14 +248,23 @@ button{ font-family: inherit; }
 }
 .reality__actions{ text-align: center; margin-top: 28px; }
 
-/* ---------- problem list ---------- */
+/* ---------- problem list (n x 2 table) ---------- */
 .problem-list{
-  max-width: 640px; margin: 0 auto;
-  list-style: none; padding: 0; display: grid; gap: 14px;
+  max-width: 880px; margin: 0 auto;
+  list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr;
+  background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+  overflow: hidden;
 }
 .problem-list li{
-  background: var(--card); border: 1px solid var(--line); border-radius: 6px;
-  padding: 18px 22px; font-weight: 600; font-size: 16px;
+  padding: 20px 26px; font-weight: 600; font-size: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.problem-list li:nth-child(odd){ border-right: 1px solid var(--line); }
+.problem-list li:nth-last-child(-n+2){ border-bottom: none; }
+@media (max-width: 640px){
+  .problem-list{ grid-template-columns: 1fr; }
+  .problem-list li:nth-child(odd){ border-right: none; }
+  .problem-list li:last-child{ border-bottom: none; }
 }
 .problem-close{
   max-width: 620px; margin: 48px auto 0; text-align: center;
