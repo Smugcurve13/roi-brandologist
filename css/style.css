@@ -90,9 +90,12 @@ button{ font-family: inherit; }
   border-bottom: 1px solid var(--line);
 }
 .site-header__row{
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 14px 16px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center; gap: 12px; padding: 14px 16px;
 }
+.site-header__row > .brand-mark{ grid-column: 1; justify-self: start; }
+.site-header__row > .header__label{ grid-column: 2; justify-self: center; }
+.site-header__row > .btn{ grid-column: 3; justify-self: end; }
 .brand-mark{
   display: inline-flex;
   align-items: center;
