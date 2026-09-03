@@ -519,28 +519,20 @@ button{ font-family: inherit; }
 }
 .proof-scrapbook img{ width: 100%; border-radius: 6px; box-shadow: 0 14px 28px -18px rgba(0,0,0,0.35); display: block; }
 
-/* ---------- logo marquee ---------- */
-.marquee{
-  margin-top: 8px; overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-.marquee__track{
-  display: flex; align-items: center; gap: 36px; width: max-content;
-  animation: marquee-scroll 24s linear infinite;
-}
-.marquee__track img{
-  height: 130px; width: auto; border-radius: 10px; box-shadow: 0 12px 26px -14px rgba(0,0,0,0.3); flex-shrink: 0;
-}
+/* ---------- shared Swiper carousels ---------- */
+.exhibition-carousel{ background: var(--bg-alt); overflow: clip; }
+.exhibition-swiper, .logo-swiper{ width: 100%; overflow: hidden; }
+.exhibition-swiper .swiper-wrapper, .logo-swiper .swiper-wrapper{ transition-timing-function: linear; }
+.exhibition-swiper .swiper-slide{ height: 300px; overflow: hidden; background: #e6e0d7; border: 1px solid rgba(179,19,28,0.18); }
+.exhibition-swiper img{ display: block; width: 100%; height: 100%; object-fit: cover; }
+.logo-swiper{ margin-top: 8px; padding: 0 0 88px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.logo-swiper .swiper-slide{ width: 204px; height: 130px; }
+.logo-card{ display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 12px; background: #fff; border-radius: 10px; box-shadow: 0 12px 26px -14px rgba(0,0,0,0.3); }
+.logo-card img{ display: block; width: 100%; height: 100%; object-fit: contain; }
 @media (max-width: 640px){
-  .marquee__track img{ height: 92px; }
-}
-@keyframes marquee-scroll{
-  from{ transform: translateX(0); }
-  to{ transform: translateX(-50%); }
-}
-@media (prefers-reduced-motion: reduce){
-  .marquee__track{ animation: none; overflow-x: auto; }
+  .exhibition-swiper .swiper-slide{ height: 50vw; }
+  .logo-swiper{ padding-bottom: 72px; }
+  .logo-swiper .swiper-slide{ width: 156px; height: 100px; }
 }
 .proof-close{ max-width: 640px; margin: 48px auto 0; text-align: center; }
 .proof-close p{ font-family: var(--font-display); font-size: 21px; font-weight: 600; }

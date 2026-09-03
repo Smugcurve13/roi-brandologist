@@ -720,6 +720,46 @@ new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.2 }).observe(assessSection);
 
+
+/* ---------------- shared exhibition and logo carousels ---------------- */
+
+const CAROUSEL_SPEED = 4472;
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const continuousAutoplay = reducedMotion ? false : {
+  delay: 0,
+  disableOnInteraction: false,
+  pauseOnMouseEnter: false,
+  reverseDirection: true,
+};
+
+if (window.Swiper) {
+  new Swiper(".exhibition-swiper", {
+    loop: true,
+    slidesPerView: "auto",
+    spaceBetween: 16,
+    speed: CAROUSEL_SPEED,
+    allowTouchMove: true,
+    freeMode: { enabled: true, momentum: false },
+    autoplay: continuousAutoplay,
+    breakpoints: {
+      0: { slidesPerView: 1.35, spaceBetween: 12 },
+      801: { slidesPerView: 3.25, spaceBetween: 16 },
+      1200: { slidesPerView: 4, spaceBetween: 16 },
+      1600: { slidesPerView: 4.5, spaceBetween: 16 },
+    },
+  });
+
+  new Swiper(".logo-swiper", {
+    loop: true,
+    slidesPerView: "auto",
+    spaceBetween: 20,
+    speed: CAROUSEL_SPEED,
+    allowTouchMove: true,
+    freeMode: { enabled: true, momentum: false },
+    autoplay: continuousAutoplay,
+  });
+}
+
 /* ---------------- init ---------------- */
 
 trackEvent("landing_page_view", {});
