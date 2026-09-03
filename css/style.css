@@ -523,7 +523,7 @@ button{ font-family: inherit; }
 .proof-scrapbook img{ width: 100%; border-radius: 6px; box-shadow: 0 14px 28px -18px rgba(0,0,0,0.35); display: block; }
 
 /* ---------- shared Swiper carousels ---------- */
-.exhibition-carousel{ background: var(--bg-alt); overflow: clip; }
+.exhibition-carousel{ position: relative; z-index: 1; padding: 0; }
 .exhibition-swiper, .logo-swiper{ width: 100%; overflow: hidden; }
 .exhibition-swiper .swiper-wrapper, .logo-swiper .swiper-wrapper{ transition-timing-function: linear; }
 .exhibition-swiper .swiper-slide{ height: 300px; overflow: hidden; background: #e6e0d7; border: 1px solid rgba(179,19,28,0.18); }

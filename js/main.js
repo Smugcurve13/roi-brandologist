@@ -724,13 +724,6 @@ new IntersectionObserver((entries) => {
 /* ---------------- shared exhibition and logo carousels ---------------- */
 
 const CAROUSEL_SPEED = 4472;
-const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const continuousAutoplay = reducedMotion ? false : {
-  delay: 0,
-  disableOnInteraction: false,
-  pauseOnMouseEnter: false,
-  reverseDirection: true,
-};
 
 if (window.Swiper) {
   new Swiper(".exhibition-swiper", {
@@ -740,7 +733,7 @@ if (window.Swiper) {
     speed: CAROUSEL_SPEED,
     allowTouchMove: true,
     freeMode: { enabled: true, momentum: false },
-    autoplay: continuousAutoplay,
+    autoplay: { delay: 0, disableOnInteraction: false, pauseOnMouseEnter: false, reverseDirection: true },
     breakpoints: {
       0: { slidesPerView: 1.35, spaceBetween: 12 },
       801: { slidesPerView: 3.25, spaceBetween: 16 },
@@ -756,7 +749,7 @@ if (window.Swiper) {
     speed: CAROUSEL_SPEED,
     allowTouchMove: true,
     freeMode: { enabled: true, momentum: false },
-    autoplay: continuousAutoplay,
+    autoplay: { delay: 0, disableOnInteraction: false, pauseOnMouseEnter: false, reverseDirection: true },
   });
 }
 
