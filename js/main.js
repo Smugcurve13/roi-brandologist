@@ -729,6 +729,7 @@ const continuousAutoplay = reducedMotion ? false : {
   delay: 0,
   disableOnInteraction: false,
   pauseOnMouseEnter: false,
+  waitForTransition: false,
   reverseDirection: true,
 };
 
