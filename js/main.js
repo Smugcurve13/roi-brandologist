@@ -1,7 +1,11 @@
 /* ==========================================================================
    Exhibition ROI Score — assessment engine, results, qualification, modal.
-   No backend is connected yet: submitLead() is the single integration point —
-   swap its body for a fetch('/api/lead', ...) once Supabase/Neon/a sheet is wired up.
+
+   Leads go to Neon Postgres via the /api routes: assessment leads to
+   roi_leads (one row per person, updated in place by later steps) and book
+   early-access leads to playbook_leads. If the API is unreachable or
+   DATABASE_URL isn't set yet, each call falls back to the Apps Script sheet
+   webhook so nothing is dropped. See SETUP.md.
    ========================================================================== */
 
 const WHATSAPP_NUMBER = "919138998075";
@@ -130,6 +134,7 @@ const state = loadState() || {
   currentQuestion: 1,
   answers: {},
   lead: null,
+  leadId: null, // roi_leads row id, so later steps update instead of inserting again
   investment: null,
   confirmedBusiness: null,
   score: null,
@@ -160,24 +165,73 @@ function saveState() {
 
 /* ---------------- lead delivery (integration point) ---------------- */
 
-function submitLead(payload) {
-  trackEvent("lead_saved", payload);
+function attribution() {
+  const q = new URLSearchParams(location.search);
+  return {
+    utmSource: q.get("utm_source") || null,
+    utmCampaign: q.get("utm_campaign") || null,
+    landingPageSource: document.referrer || null,
+  };
+}
+
+// Falls back to the Apps Script sheet only if the API is unreachable or the
+// database isn't wired up yet, so a lead is never dropped mid-migration.
+function sheetFallback(payload) {
+  if (!SHEET_WEBHOOK_URL) return;
+  // text/plain avoids a CORS preflight Apps Script doesn't handle; doPost still JSON.parses the body.
+  fetch(SHEET_WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
+
+async function postJson(url, payload) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(String(res.status));
+  return res.json();
+}
+
+// One row per person: created here, then updated in place by the qualification
+// step and the review request. state.leadId is the handle.
+async function createRoiLead(payload) {
   try {
-    const existing = JSON.parse(localStorage.getItem("roi_leads") || "[]");
-    existing.push({ ...payload, savedAt: new Date().toISOString() });
-    localStorage.setItem("roi_leads", JSON.stringify(existing));
-  } catch (e) {}
-  // ponytail: silently no-ops until SHEET_WEBHOOK_URL is set (see apps-script-webhook.gs).
-  if (SHEET_WEBHOOK_URL) {
-    // text/plain avoids a CORS preflight Apps Script doesn't handle; doPost still JSON.parses the body.
-    fetch(SHEET_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload),
-    }).catch(() => {});
+    const { id } = await postJson("/api/lead", { ...payload, ...attribution(), maxScore: MAX_SCORE });
+    state.leadId = id;
+    saveState();
+  } catch (e) {
+    sheetFallback({ ...payload, ...attribution() });
   }
 }
 
+async function updateRoiLead(patch) {
+  if (!state.leadId) return sheetFallback({ ...(state.lead || {}), ...patch });
+  try {
+    const res = await fetch("/api/lead", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: state.leadId, ...patch }),
+    });
+    if (!res.ok) throw new Error(String(res.status));
+  } catch (e) {
+    sheetFallback({ ...(state.lead || {}), ...patch });
+  }
+}
+
+async function createPlaybookLead(payload) {
+  try {
+    await postJson("/api/playbook", { ...payload, ...attribution() });
+  } catch (e) {
+    sheetFallback({ ...payload, ...attribution(), bookWaitlist: true });
+  }
+}
+
+// Analytics gets counts and categories only. Never a name, number or email —
+// Google's terms prohibit PII in GA4 and it is grounds for losing the property.
 function trackEvent(name, data) {
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event: name, ...data });
@@ -363,8 +417,8 @@ function renderCapture() {
       state.confirmedBusiness = bizEl && bizEl.value ? Number(bizEl.value) : null;
     }
     state.lead = { name, company, whatsapp };
-    trackEvent("lead_captured", state.lead);
-    submitLead({
+    trackEvent("lead_captured", { score: state.score, resultCategory: state.category });
+    createRoiLead({
       ...state.lead,
       answers: Object.fromEntries(Object.entries(state.answers).map(([k, v]) => [k, v.label])),
       investment: state.investment,
@@ -373,9 +427,6 @@ function renderCapture() {
       resultCategory: state.category,
       assessmentStatus: "COMPLETE",
       lastQuestionCompleted: QUESTIONS.length,
-      utmSource: new URLSearchParams(location.search).get("utm_source") || null,
-      utmCampaign: new URLSearchParams(location.search).get("utm_campaign") || null,
-      landingPageSource: document.referrer || null,
     });
     state.phase = "complete";
     saveState();
@@ -519,7 +570,7 @@ function renderQualify() {
 
   const finish = (data) => {
     state.qualification = data;
-    submitLead({ ...(state.lead || {}), qualification: data, totalScore: state.score });
+    updateRoiLead({ qualification: data });
     trackEvent("qualification_completed", data || { skipped: true });
     saveState();
     document.getElementById("book").scrollIntoView({ behavior: "smooth" });
@@ -570,7 +621,7 @@ function openReviewModal() {
     `;
     $("#reviewSubmit", reviewModalBody).addEventListener("click", () => {
       const help = (reviewModalBody.querySelector('input[name="help"]:checked') || {}).value || null;
-      submitLead({ ...(state.lead || {}), totalScore: state.score, helpRequired: help, roiReviewRequested: true });
+      updateRoiLead({ helpRequired: help, roiReviewRequested: true });
       trackEvent("roi_review_requested", { help });
       const waMsg = `Hi, I just completed the Exhibition ROI Score at roi.brandologist.in. My score is ${state.score}/${MAX_SCORE} and I'd like to discuss my Exhibition ROI Review.`;
       reviewModalBody.innerHTML = `
@@ -592,6 +643,51 @@ $("#reviewModalClose").addEventListener("click", closeReviewModal);
 reviewModal.addEventListener("click", (e) => { if (e.target === reviewModal) closeReviewModal(); });
 
 /* ---------------- playbook early-access form ---------------- */
+
+// #playbook is the shareable deep link for the book lead magnet — it can be sent
+// on its own, so someone may land here having never seen the assessment. Record
+// how they arrived so those leads are distinguishable in the table.
+const PLAYBOOK_HASHES = ["#playbook", "#book", "#early-access"];
+const arrivedViaPlaybookLink = PLAYBOOK_HASHES.includes(location.hash.toLowerCase());
+function playbookSource() {
+  if (arrivedViaPlaybookLink) return "playbook-direct-link";
+  return state.score !== null ? "after-assessment" : "page-scroll";
+}
+
+if (arrivedViaPlaybookLink) {
+  // Stop the browser restoring a previous scroll position after load — it fires
+  // after our own positioning and silently undoes it, dumping deep-link visitors
+  // back at the top of the page.
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  // Re-anchor after load: the form sits ~8000px down a page full of lazy images,
+  // so the browser's initial hash jump lands in the wrong place once those images
+  // settle. Instant, not smooth — a deep link should arrive, not travel, and an
+  // 8000px smooth scroll is both slow and easily interrupted.
+  window.addEventListener("load", () => {
+    const wrap = document.getElementById("playbookFormWrap");
+    if (!wrap) return;
+    const land = () => {
+      // html{scroll-behavior:smooth} otherwise wins over behavior:"auto" in some
+      // engines and the jump silently does nothing. Suspend it for the landing.
+      const root = document.documentElement;
+      const prev = root.style.scrollBehavior;
+      root.style.scrollBehavior = "auto";
+      const top = wrap.getBoundingClientRect().top + window.scrollY
+        - Math.max(0, (window.innerHeight - wrap.offsetHeight) / 2);
+      window.scrollTo(0, Math.max(0, top));
+      root.style.scrollBehavior = prev;
+
+      wrap.classList.add("is-highlighted");
+      setTimeout(() => wrap.classList.remove("is-highlighted"), 2400);
+      const input = document.getElementById("pb-contact");
+      if (input && window.matchMedia("(min-width: 760px)").matches) input.focus({ preventScroll: true });
+    };
+    land();
+    // one more pass on the next frame in case a late image shifted the layout
+    requestAnimationFrame(land);
+    trackEvent("playbook_link_landed", {});
+  });
+}
 
 const playbookForm = document.getElementById("playbookForm");
 const PB_MODES = {
@@ -656,8 +752,15 @@ if (playbookForm) {
     state.bookWaitlist = true;
     saveState();
     trackEvent("book_early_access_requested", { mode: pbMode });
-    // payload keys kept as-is so the existing sheet columns keep working
-    submitLead({ ...(state.lead || {}), bookWaitlist: true, bookPhone: phone, bookEmail: email });
+    createPlaybookLead({
+      contactMode: pbMode,
+      phone,
+      email,
+      // carried through only if they already completed the assessment
+      name: (state.lead && state.lead.name) || null,
+      company: (state.lead && state.lead.company) || null,
+      source: playbookSource(),
+    });
     pbShowSuccess();
   });
 

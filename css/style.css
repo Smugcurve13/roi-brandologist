@@ -560,6 +560,13 @@ button{ font-family: inherit; }
   border-radius: 10px;
   padding: 22px 22px 20px;
 }
+/* brief pulse when someone arrives on the #playbook deep link, so the form they
+   were sent to is obviously the thing to act on */
+.playbook-form.is-highlighted{
+  border-color: var(--red);
+  box-shadow: 0 0 0 4px rgba(179,19,28,0.22);
+  transition: box-shadow .35s ease, border-color .35s ease;
+}
 .playbook-form__label{
   font-family: var(--font-display); font-weight: 700; font-size: 19px; margin-bottom: 6px;
 }

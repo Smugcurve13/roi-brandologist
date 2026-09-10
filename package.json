@@ -1,0 +1,13 @@
+{
+  "name": "roi-brandologist",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Exhibition ROI Score landing page — static front end with Vercel Functions and Neon Postgres.",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}

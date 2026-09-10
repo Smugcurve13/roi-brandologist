@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Leads — The Brandologist Co.</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+<style>
+  :root{
+    --bg:#FAF9F6; --bg-alt:#F1EEE7; --ink:#121212; --ink-soft:#5A5852;
+    --red:#B3131C; --red-dark:#8A0F17; --red-tint:#FAEBEA;
+    --card:#fff; --line:rgba(18,18,18,.12); --line-strong:rgba(18,18,18,.22);
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{ color:var(--red); }
+  .wrap{ max-width:1240px; margin:0 auto; padding:0 20px; }
+
+  .topbar{
+    background:var(--card); border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:10;
+  }
+  .topbar__row{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 0; }
+  .brand{ font-weight:800; letter-spacing:-.01em; font-size:16px; }
+  .brand span{ color:var(--ink-soft); font-weight:600; }
+  .who{ font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:12px; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border:1.5px solid transparent; border-radius:6px; padding:10px 16px;
+    font:inherit; font-size:14px; font-weight:700; cursor:pointer; text-decoration:none;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .btn--red{ background:var(--red); color:#fff; }
+  .btn--red:hover{ background:var(--red-dark); }
+  .btn--ghost{ background:transparent; border-color:var(--line-strong); color:var(--ink); }
+  .btn--ghost:hover{ border-color:var(--ink); }
+  .btn[disabled]{ opacity:.45; cursor:not-allowed; }
+
+  /* login */
+  .login{ max-width:400px; margin:14vh auto; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:32px 28px; }
+  .login h1{ font-size:20px; margin:0 0 6px; }
+  .login p.sub{ margin:0 0 22px; color:var(--ink-soft); font-size:14px; }
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  .field label{ font-weight:700; font-size:13px; }
+  .field input{
+    font:inherit; padding:11px 13px; border:1.5px solid var(--line-strong);
+    border-radius:6px; background:#fff; color:var(--ink);
+  }
+  .field input:focus{ outline:none; border-color:var(--red); }
+  .msg{ min-height:20px; font-size:13px; font-weight:600; color:var(--red); margin:0 0 10px; }
+  .msg--ok{ color:#157a45; }
+
+  /* tabs */
+  .tabs{ display:flex; gap:6px; padding:18px 0 0; flex-wrap:wrap; }
+  .tab{
+    border:1px solid var(--line-strong); background:var(--card); color:var(--ink-soft);
+    border-radius:999px; padding:8px 16px; font:inherit; font-size:13.5px; font-weight:700; cursor:pointer;
+  }
+  .tab:hover{ color:var(--ink); }
+  .tab[aria-selected="true"]{ background:var(--ink); border-color:var(--ink); color:#fff; }
+  .tab .count{ opacity:.65; font-weight:600; margin-left:6px; }
+
+  .toolbar{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px 0; flex-wrap:wrap; }
+  .toolbar__meta{ font-size:13px; color:var(--ink-soft); }
+  .toolbar__actions{ display:flex; gap:8px; align-items:center; }
+  .search{ font:inherit; font-size:14px; padding:9px 12px; border:1.5px solid var(--line-strong); border-radius:6px; min-width:220px; }
+  .search:focus{ outline:none; border-color:var(--red); }
+
+  /* table */
+  .tablewrap{ background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:auto; max-height:70vh; }
+  table{ border-collapse:collapse; width:100%; font-size:13px; }
+  thead th{
+    position:sticky; top:0; background:var(--bg-alt); text-align:left; white-space:nowrap;
+    padding:11px 12px; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-soft); border-bottom:1px solid var(--line); z-index:1;
+  }
+  tbody td{ padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; max-width:320px; }
+  tbody tr:hover{ background:var(--bg-alt); }
+  td.num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  /* jsonb cells hold five answers — cap them so one long cell can't make every
+     row 200px tall, and let the cell scroll instead */
+  td.wrapcell{
+    white-space:pre-wrap; word-break:break-word;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; color:var(--ink-soft);
+    max-height:76px; overflow:auto; min-width:220px;
+  }
+  tbody td{ height:1px; }
+  .pill{ display:inline-block; padding:2px 9px; border-radius:999px; font-size:11.5px; font-weight:700; background:var(--bg-alt); }
+  .pill--leak{ background:var(--red-tint); color:var(--red); }
+  .pill--exists{ background:#FDF1DF; color:#8a5a08; }
+  .pill--scale{ background:#E4F5EA; color:#157a45; }
+
+  .empty{ padding:56px 20px; text-align:center; color:var(--ink-soft); }
+  .notice{ background:var(--red-tint); border:1px solid rgba(179,19,28,.25); color:var(--red-dark);
+           border-radius:8px; padding:14px 16px; font-size:13.5px; margin:18px 0; }
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="loginView" hidden>
+  <form class="login" id="loginForm">
+    <h1>Leads</h1>
+    <p class="sub">The Brandologist Co. — Exhibition ROI</p>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+    </div>
+    <p class="msg" id="loginMsg" role="alert"></p>
+    <button class="btn btn--red" style="width:100%" type="submit" id="loginBtn">Sign in</button>
+  </form>
+</section>
+
+<!-- DASHBOARD -->
+<section id="appView" hidden>
+  <div class="topbar">
+    <div class="wrap topbar__row">
+      <div class="brand">Leads <span>· Exhibition ROI</span></div>
+      <div class="who">
+        <span id="whoEmail"></span>
+        <button class="btn btn--ghost" id="signOutBtn" type="button">Sign out</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="dbNotice" class="notice" hidden></div>
+
+    <div class="tabs" id="tabs" role="tablist"></div>
+
+    <div class="toolbar">
+      <div class="toolbar__meta" id="meta"></div>
+      <div class="toolbar__actions">
+        <input class="search" id="search" type="search" placeholder="Filter these rows…" aria-label="Filter rows">
+        <button class="btn btn--red" id="exportBtn" type="button">Export CSV</button>
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr id="head"></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden>No leads in this table yet.</div>
+    </div>
+    <p style="color:var(--ink-soft); font-size:12.5px; margin:14px 0 40px;" id="footNote"></p>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+
+  const $ = (s) => document.querySelector(s);
+  const state = { table: "roi", tables: [], columns: [], rows: [], total: 0, label: "" };
+
+  const PRETTY = {
+    id:"ID", created_at:"Received", name:"Name", company:"Company", whatsapp:"WhatsApp",
+    total_score:"Score", max_score:"Out of", result_category:"Category",
+    assessment_status:"Status", last_question_completed:"Q done",
+    investment:"Investment", confirmed_business:"Confirmed biz",
+    answers:"Answers", qualification:"Qualification", help_required:"Wants help with",
+    roi_review_requested:"Review req.", utm_source:"UTM source", utm_campaign:"UTM campaign",
+    landing_page_source:"Referrer", contact_mode:"Via", phone:"Phone", email:"Email", source:"Source"
+  };
+  const NUMERIC = new Set(["id","total_score","max_score","last_question_completed","investment","confirmed_business"]);
+  const JSONISH = new Set(["answers","qualification"]);
+
+  function fmtDate(v){
+    if(!v) return "";
+    const d = new Date(v);
+    if (isNaN(d)) return String(v);
+    return d.toLocaleString("en-IN", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" });
+  }
+
+  // Lead data is untrusted input — every cell is written with textContent, never innerHTML.
+  function renderTable(){
+    const head = $("#head"), body = $("#rows");
+    head.textContent = ""; body.textContent = "";
+
+    state.columns.forEach((c) => {
+      const th = document.createElement("th");
+      th.textContent = PRETTY[c] || c;
+      head.appendChild(th);
+    });
+
+    const q = $("#search").value.trim().toLowerCase();
+    const rows = q
+      ? state.rows.filter((r) => state.columns.some((c) => {
+          const v = r[c];
+          if (v === null || v === undefined) return false;
+          return (typeof v === "object" ? JSON.stringify(v) : String(v)).toLowerCase().includes(q);
+        }))
+      : state.rows;
+
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      state.columns.forEach((c) => {
+        const td = document.createElement("td");
+        const v = r[c];
+
+        if (c === "created_at") { td.textContent = fmtDate(v); td.className = "num"; }
+        else if (c === "result_category" && v) {
+          const s = document.createElement("span");
+          s.className = "pill pill--" + String(v).replace(/[^a-z]/gi, "");
+          s.textContent = v;
+          td.appendChild(s);
+        }
+        else if (JSONISH.has(c) && v && typeof v === "object") {
+          td.className = "wrapcell";
+          td.textContent = Object.entries(v).map(([k, val]) => k + ": " + val).join("\n");
+        }
+        else if (typeof v === "boolean") { td.textContent = v ? "Yes" : "—"; }
+        else if (NUMERIC.has(c)) { td.className = "num"; td.textContent = (v === null || v === undefined) ? "" : String(v); }
+        else { td.textContent = (v === null || v === undefined) ? "" : String(v); }
+
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+
+    $("#empty").hidden = rows.length > 0;
+    $("#meta").textContent = q
+      ? rows.length + " of " + state.total + " " + state.label + " leads"
+      : state.total + " " + state.label + " lead" + (state.total === 1 ? "" : "s");
+    $("#footNote").textContent = "Export downloads every row in " + state.label + ", not just what's filtered on screen.";
+  }
+
+  function renderTabs(){
+    const box = $("#tabs");
+    box.textContent = "";
+    state.tables.forEach((t) => {
+      const b = document.createElement("button");
+      b.className = "tab";
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", String(t.key === state.table));
+      b.textContent = t.label;
+      b.addEventListener("click", () => { state.table = t.key; load(); });
+      box.appendChild(b);
+    });
+  }
+
+  async function load(){
+    renderTabs();
+    try {
+      const res = await fetch("/api/admin/leads?table=" + encodeURIComponent(state.table), { credentials: "same-origin" });
+      if (res.status === 401) return showLogin();
+      const data = await res.json();
+      if (!res.ok) {
+        $("#dbNotice").hidden = false;
+        $("#dbNotice").textContent = data.error === "database_not_configured"
+          ? "No database connected yet. Add the Neon integration in Vercel so DATABASE_URL is set."
+          : ("Could not load leads: " + (data.error || res.status));
+        return;
+      }
+      $("#dbNotice").hidden = true;
+      state.columns = data.columns; state.rows = data.rows;
+      state.total = data.total; state.label = data.label;
+      renderTable();
+    } catch (e) {
+      $("#dbNotice").hidden = false;
+      $("#dbNotice").textContent = "Could not reach the server.";
+    }
+  }
+
+  function showLogin(){ $("#loginView").hidden = false; $("#appView").hidden = true; }
+  function showApp(email){
+    $("#loginView").hidden = true; $("#appView").hidden = false;
+    $("#whoEmail").textContent = email || "";
+    load();
+  }
+
+  $("#loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = $("#loginBtn"); const msg = $("#loginMsg");
+    btn.disabled = true; msg.textContent = "";
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email: $("#email").value, password: $("#password").value }),
+      });
+      const data = await res.json();
+      if (!res.ok) { msg.textContent = data.error || "Sign in failed."; return; }
+      $("#password").value = "";
+      showApp(data.email);
+    } catch (err) {
+      msg.textContent = "Could not reach the server.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $("#signOutBtn").addEventListener("click", async () => {
+    await fetch("/api/admin/session", { method: "DELETE", credentials: "same-origin" });
+    showLogin();
+  });
+
+  // Exports whichever table is active in state — same key the table view is using.
+  $("#exportBtn").addEventListener("click", () => {
+    window.location.href = "/api/admin/export?table=" + encodeURIComponent(state.table);
+  });
+
+  $("#search").addEventListener("input", renderTable);
+
+  (async function init(){
+    try {
+      const res = await fetch("/api/admin/session", { credentials: "same-origin" });
+      const s = await res.json();
+      state.tables = s.tables && s.tables.length ? s.tables
+        : [{ key: "roi", label: "Exhibition ROI Score" }, { key: "playbook", label: "Playbook Early Access" }];
+      if (!s.authConfigured) {
+        showLogin();
+        $("#loginMsg").textContent = "Admin auth is not configured on the server yet.";
+        return;
+      }
+      s.signedIn ? showApp(s.email) : showLogin();
+    } catch (e) {
+      showLogin();
+      $("#loginMsg").textContent = "Could not reach the server.";
+    }
+  })();
+})();
+</script>
+</body>
+</html>
