@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FQX8J1D918"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-FQX8J1D918');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Exhibition ROI Score | Check Your Exhibition Lead Conversion System</title>
@@ -10,37 +19,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;0,900;1,500;1,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
-<!-- preload logo carousel images so they're ready before the user scrolls to it -->
-<link rel="preload" as="image" href="images/logos/harrison.png">
-<link rel="preload" as="image" href="images/logos/klw.png">
-<link rel="preload" as="image" href="images/logos/baybreeze.png">
-<link rel="preload" as="image" href="images/logos/geospar.png">
-<link rel="preload" as="image" href="images/logos/bhupati.png">
-<link rel="preload" as="image" href="images/logos/sriwin.png">
-<link rel="preload" as="image" href="images/logos/intoai.png">
-<link rel="preload" as="image" href="images/logos/npav.png">
-<link rel="preload" as="image" href="images/logos/rcm.png">
-<link rel="preload" as="image" href="images/logos/greenplanet.png">
-<link rel="preload" as="image" href="images/logos/urjakendra.png">
-<link rel="preload" as="image" href="images/logos/glonet.png">
-<link rel="preload" as="image" href="images/logos/overseas.png">
-<link rel="preload" as="image" href="images/logos/1to3.png">
-<link rel="preload" as="image" href="images/logos/aandt.png">
-<link rel="preload" as="image" href="images/logos/cellecor.png">
-<link rel="preload" as="image" href="images/logos/click.png">
-<link rel="preload" as="image" href="images/logos/drool.png">
-<link rel="preload" as="image" href="images/logos/gtc.png">
-<link rel="preload" as="image" href="images/logos/mahavira.png">
-<link rel="preload" as="image" href="images/logos/mohilya.png">
-<link rel="preload" as="image" href="images/logos/nest.png">
-<link rel="preload" as="image" href="images/logos/prabha.png">
-<link rel="preload" as="image" href="images/logos/samarsa.png">
-<link rel="preload" as="image" href="images/logos/trv.png">
-<link rel="preload" as="image" href="images/logos/marsin.png">
-<link rel="preload" as="image" href="images/logos/blissmet.png">
-<link rel="preload" as="image" href="images/logos/kranti.png">
-<link rel="preload" as="image" href="images/logos/shriram.png">
-<link rel="preload" as="image" href="images/logos/srijani.png">
+<!-- hero is the LCP element -->
+<link rel="preload" as="image" href="images/hero-hall.jpg" media="(min-width: 701px)" fetchpriority="high">
+<link rel="preload" as="image" href="images/hero-hall-mobile.jpg" media="(max-width: 700px)" fetchpriority="high">
 </head>
 <body>
 
@@ -48,7 +29,7 @@
   <div class="wrap site-header__row">
     <a class="brand-mark" href="#top"><img src="images/brandologist-logo.png" alt="The Brandologist Co." class="brand-logo"></a>
     <span class="header__label">Exhibition ROI</span>
-    <a class="btn btn--red btn--sm js-cta-primary" href="#assessment">Check My Exhibition ROI Score →</a>
+    <a class="btn btn--red btn--sm js-cta-primary" href="#assessment"><span class="cta-text-full">Check My Exhibition ROI Score →</span><span class="cta-text-short">Check My Score →</span></a>
   </div>
 </header>
 
@@ -56,22 +37,41 @@
 
   <!-- HERO -->
   <section class="hero">
+    <picture class="hero__media">
+      <source media="(max-width: 700px)" srcset="images/hero-hall-mobile.jpg" width="900" height="1200">
+      <img src="images/hero-hall.jpg" alt="The Bharatiya Vyapar Mahotsav 2026 exhibition floor at Bharat Mandapam, New Delhi" width="1920" height="1024" fetchpriority="high" decoding="async">
+    </picture>
     <div class="wrap hero__inner">
-      <p class="eyebrow">For MSME Business Owners &amp; Exhibitors</p>
-      <h1 class="hero__title">Your exhibition is over.<br>But how much potential business is still sitting in your <em>leads</em>?</h1>
-      <p class="hero__lede">You invested in the stall. Your team spent days at the exhibition. You collected enquiries, visiting cards, WhatsApp conversations and quotations.</p>
-      <p class="hero__question">&ldquo;What is the &#8377; value of your open exhibition opportunities?&rdquo;<br>Can you answer it in 60 seconds?</p>
-
-      <div class="flow" aria-hidden="true">
-        <div class="flow__step">Leads</div><span class="flow__arrow">→</span>
-        <div class="flow__step">&#8377; Pipeline</div><span class="flow__arrow">→</span>
-        <div class="flow__step">Follow-Up</div><span class="flow__arrow">→</span>
-        <div class="flow__step flow__step--accent">Business</div>
-      </div>
+      <p class="eyebrow eyebrow--light">For MSME Business Owners &amp; Exhibitors</p>
+      <h1 class="hero__title">Your exhibition is over.<br>How much business is still sitting in your <em>leads</em>?</h1>
+      <p class="hero__lede">You paid for the stall, the travel and the team &mdash; and came back with enquiries, cards and quotations. Most of that pipeline is still open.</p>
 
       <div class="hero__actions">
         <a class="btn btn--red js-cta-primary" href="#assessment">Check My Exhibition ROI Score →</a>
-        <p class="hero__micro">Takes around 3 minutes &middot; Built for MSME Business Owners &amp; Exhibitors</p>
+        <p class="hero__micro">5 questions &middot; about 2 minutes &middot; free</p>
+      </div>
+
+      <!-- The narrowing bars are the argument: volume falls at every stage, and the
+           biggest fall is after the event, where nobody is watching. No figures shown —
+           we have no measured drop-off data and will not imply one. -->
+      <div class="leakflow" aria-hidden="true">
+        <div class="leakflow__stage">
+          <span class="leakflow__label">Leads collected</span>
+          <span class="leakflow__bar" style="--fill:100%"></span>
+        </div>
+        <div class="leakflow__stage">
+          <span class="leakflow__label">&#8377; Pipeline known</span>
+          <span class="leakflow__bar" style="--fill:72%"></span>
+        </div>
+        <div class="leakflow__stage">
+          <span class="leakflow__label">Actually followed up</span>
+          <span class="leakflow__bar" style="--fill:44%"></span>
+        </div>
+        <div class="leakflow__stage leakflow__stage--gap">
+          <span class="leakflow__label">Converted to business</span>
+          <span class="leakflow__bar leakflow__bar--thin" style="--fill:20%"></span>
+          <span class="leakflow__note">the gap nobody measures</span>
+        </div>
       </div>
     </div>
   </section>
@@ -85,7 +85,7 @@
         <p class="section__sub">Great footfall. A buzzing stall. Old customers dropping by just to say hello. New industry contacts exchanging numbers. By day three, your team is running on adrenaline, your visiting card box is overflowing, and your phone hasn't stopped buzzing on WhatsApp.</p>
       </div>
       <div class="norm-photos">
-        <img src="images/booth-hall-wide.jpg" alt="The BVM 2026 exhibition hall at Bharat Mandapam" loading="lazy">
+        <img src="images/stall-wide.jpg" alt="The Sriwin Electric stall and team at BVM 2026" loading="lazy">
         <img src="images/founders/harrison.jpg" alt="Founder conversation with Harrison Locks at BVM 2026" loading="lazy">
         <img src="images/founders/klw.jpg" alt="Founder conversation with KLW Masale at BVM 2026" loading="lazy">
       </div>
@@ -129,16 +129,13 @@
         <p class="section__sub">Because somewhere between</p>
         <p class="section__sub" style="font-weight:700; color:var(--ink); font-size:19px; margin-top:6px;">Lead → Follow-Up → Opportunity → Conversion</p>
       </div>
-      <ul class="problem-list">
-        <li>Who decided which enquiries were Hot, Warm or Nurture?</li>
-        <li>Was the &#8377; potential of serious opportunities recorded?</li>
+      <ol class="problem-list">
+        <li>Was the &#8377; potential of your serious opportunities ever recorded?</li>
         <li>Does every important lead have one clear owner?</li>
-        <li>Is the exact next action visible?</li>
-        <li>Is the next follow-up date recorded?</li>
-        <li>Are quotations being systematically followed up?</li>
+        <li>Are quotations being systematically followed up &mdash; or only when someone remembers?</li>
         <li>Can management see the complete exhibition pipeline today?</li>
-        <li>Do you know the actual ROI from your exhibition?</li>
-      </ul>
+        <li>Do you know the actual ROI from your last exhibition?</li>
+      </ol>
       <div class="problem-close">
         <p>If these answers aren't immediately visible&hellip;</p>
         <p class="answer">It was never a lead generation problem.<br>It's always been a lead conversion blind spot.</p>
@@ -192,7 +189,7 @@
         <button data-full="images/founders/intoai.jpg"><img src="images/founders/intoai.jpg" alt="Founder conversation with Into AI at BVM 2026" loading="lazy"></button>
         <button data-full="images/founders/npav.jpg"><img src="images/founders/npav.jpg" alt="Founder conversation with NP AV Cyber Security at BVM 2026" loading="lazy"></button>
         <button data-full="images/founders/rcm.jpg"><img src="images/founders/rcm.jpg" alt="Founder conversation with RCM at BVM 2026" loading="lazy"></button>
-        <button data-full="images/founders/greenplanet.jpg"><img src="images/founders/greenplanet.jpg" alt="Founder conversation with Green Planet India at BVM 2026" loading="lazy"></button>
+        <button data-full="images/founders/spargeoinfra.jpg"><img src="images/founders/spargeoinfra.jpg" alt="Founder conversation with Spar Geo Infra at BVM 2026" loading="lazy"></button>
         <button data-full="images/founders/urjakendra.jpg"><img src="images/founders/urjakendra.jpg" alt="Founder conversation with Urja Kendra at BVM 2026" loading="lazy"></button>
         <button data-full="images/founders/glonet.jpg"><img src="images/founders/glonet.jpg" alt="Founder conversation with Glonet at BVM 2026" loading="lazy"></button>
         <button data-full="images/founders/overseas.jpg"><img src="images/founders/overseas.jpg" alt="Founder conversation with Overseas Logistics at BVM 2026" loading="lazy"></button>
@@ -291,18 +288,27 @@
       </div>
       <div class="bda-grid">
         <div class="bda-card">
+          <p class="bda-card__phase">Phase 01</p>
           <p class="bda-card__label">Before</p>
-          <p class="bda-card__flow">Attract → Target → Connect → Invite → Book</p>
+          <ul class="bda-card__steps">
+            <li>Attract</li><li>Target</li><li>Connect</li><li>Invite</li><li>Book</li>
+          </ul>
           <p>Are the right prospects aware of you before the exhibition even starts?</p>
         </div>
         <div class="bda-card">
+          <p class="bda-card__phase">Phase 02</p>
           <p class="bda-card__label">During</p>
-          <p class="bda-card__flow">Engage → Qualify → Capture → Value → Commit</p>
+          <ul class="bda-card__steps">
+            <li>Engage</li><li>Qualify</li><li>Capture</li><li>Value</li><li>Commit</li>
+          </ul>
           <p>Are you collecting visiting cards&hellip; or identifying genuine business opportunities?</p>
         </div>
-        <div class="bda-card">
+        <div class="bda-card bda-card--accent">
+          <p class="bda-card__phase">Phase 03</p>
           <p class="bda-card__label">After</p>
-          <p class="bda-card__flow">Prioritise → Follow Up → Nurture → Convert → Measure</p>
+          <ul class="bda-card__steps">
+            <li>Prioritise</li><li>Follow Up</li><li>Nurture</li><li>Convert</li><li>Measure</li>
+          </ul>
           <p>This is where a large part of Exhibition ROI is won &mdash; or lost.</p>
         </div>
       </div>
@@ -359,9 +365,27 @@
         </div>
 
         <div class="playbook-grid__text">
-          <p class="eyebrow eyebrow--light">Coming Soon</p>
+          <p class="eyebrow eyebrow--light">Pre-Launch</p>
           <h2 class="playbook-hero__title">Exhibitions should not be treated as events.<br>They should be treated as <em>measurable revenue systems.</em></h2>
           <p class="playbook-hero__sub">The Exhibition ROI Playbook &mdash; Before. During. After. How to turn every exhibition into measurable business growth.</p>
+
+          <div class="playbook-form" id="playbookFormWrap">
+            <p class="playbook-form__label">Request early access</p>
+            <p class="playbook-form__intro">A limited first release goes to exhibitors before it opens publicly. Tell us how to reach you.</p>
+            <form id="playbookForm" novalidate>
+              <div class="pb-toggle" role="group" aria-label="How should we reach you?">
+                <button type="button" class="pb-toggle__btn is-active" data-mode="phone" aria-pressed="true">WhatsApp</button>
+                <button type="button" class="pb-toggle__btn" data-mode="email" aria-pressed="false">Email</button>
+              </div>
+              <div class="playbook-form__row">
+                <label class="sr-only" for="pb-contact" id="pbContactLabel">WhatsApp number</label>
+                <input type="tel" id="pb-contact" inputmode="tel" placeholder="e.g. +91 98765 43210" autocomplete="tel">
+                <button type="submit" class="btn btn--red">Request Early Access →</button>
+              </div>
+            </form>
+            <p class="playbook-form__error" id="pbFormError" role="alert"></p>
+            <p class="playbook-form__micro">One contact is enough &mdash; we'll reach out the moment it's ready. No spam.</p>
+          </div>
 
           <ul class="playbook-list">
             <li>Prepare the right pre-exhibition strategy</li>
@@ -372,17 +396,6 @@
           </ul>
 
           <p class="playbook-author">By Sudhir Makhija &mdash; Indian business leader, author and exhibition strategist who helps MSME business owners turn exhibition participation into more structured, measurable business growth.</p>
-
-          <div class="playbook-form" id="playbookFormWrap">
-            <p class="playbook-form__label">Be first to know when it launches</p>
-            <form class="playbook-form__row" id="playbookForm">
-              <input type="tel" id="pb-phone" placeholder="WhatsApp number">
-              <input type="email" id="pb-email" placeholder="Email address">
-              <button type="submit" class="btn btn--red">Notify Me When It Launches →</button>
-            </form>
-            <p class="playbook-form__error" id="pbFormError"></p>
-            <p class="playbook-form__micro">Enter either one &mdash; we'll message you the moment it's live. No spam.</p>
-          </div>
         </div>
       </div>
     </div>
@@ -426,7 +439,7 @@
       <h2>Your next exhibition shouldn't end with a stack of visiting cards.<br>It should end with <em>a measurable business pipeline.</em></h2>
       <p>Before spending more money on the next exhibition&hellip; find out how strong your current Exhibition Revenue System really is.</p>
       <a class="btn btn--red js-cta-primary" href="#assessment">Check My Exhibition ROI Score →</a>
-      <p class="hero__micro">Approximately 3 minutes.</p>
+      <p class="hero__micro">Approximately 2 minutes.</p>
     </div>
   </section>
 
@@ -437,10 +450,16 @@
     <div class="site-footer__row">
       <a class="brand-mark" href="#top"><img src="images/brandologist-logo.png" alt="The Brandologist Co." class="brand-logo"></a>
       <div class="site-footer__links">
-        <span>Exhibition ROI Initiative</span>
-        <a href="mailto:hello@brandologist.in">Contact</a>
-        <a href="mailto:hello@brandologist.in">Privacy Policy</a>
-        <a href="mailto:hello@brandologist.in">Terms</a>
+        <a href="mailto:hello@brandologist.in">hello@brandologist.in</a>
+        <a class="social-link" href="https://www.instagram.com/thebrandologistco" target="_blank" rel="noopener" aria-label="The Brandologist Co. on Instagram" title="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 1.8.25 2.2.42.6.22 1 .48 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c0 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2 0-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2-.1-1.3-.1-1.7-.1-4.9s0-3.6.1-4.9c0-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2m0 2.2c-3.1 0-3.5 0-4.7.07-.9 0-1.4.2-1.7.3-.4.2-.7.4-1 .6-.3.3-.5.6-.6 1-.1.3-.3.8-.3 1.7-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c0 .9.2 1.4.3 1.7.1.4.3.7.6 1 .3.3.6.5 1 .6.3.1.8.3 1.7.3 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c.9 0 1.4-.2 1.7-.3.4-.1.7-.3 1-.6.3-.3.5-.6.6-1 .1-.3.3-.8.3-1.7.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c0-.9-.2-1.4-.3-1.7-.1-.4-.3-.7-.6-1-.3-.3-.6-.5-1-.6-.3-.1-.8-.3-1.7-.3-1.2-.07-1.6-.07-4.7-.07z"/><path d="M12 15.3a3.3 3.3 0 1 1 0-6.6 3.3 3.3 0 0 1 0 6.6m0-8.4a5.1 5.1 0 1 0 0 10.2 5.1 5.1 0 0 0 0-10.2z"/><circle cx="17.4" cy="6.6" r="1.2"/></svg>
+        </a>
+        <a class="social-link" href="https://www.facebook.com/share/1LkLBVK1nA/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="The Brandologist Co. on Facebook" title="Facebook">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg>
+        </a>
+        <a class="social-link" href="https://www.linkedin.com/company/thebrandologistco/" target="_blank" rel="noopener" aria-label="The Brandologist Co. on LinkedIn" title="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9.5 9h3.8v1.7h.05c.53-.95 1.83-1.95 3.76-1.95 4.02 0 4.76 2.5 4.76 5.76V21h-4v-5.1c0-1.22-.02-2.8-1.7-2.8-1.7 0-1.96 1.32-1.96 2.7V21h-4z"/></svg>
+        </a>
       </div>
     </div>
     <div class="site-footer__bottom">

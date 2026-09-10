@@ -5,7 +5,9 @@
    ========================================================================== */
 
 const WHATSAPP_NUMBER = "919138998075";
-const STORAGE_KEY = "roi_assessment_v1";
+// v2: the lead gate moved from after Q2 to after Q5, so old in-flight state would
+// resume into the wrong phase (a v1 "capture" would submit a 2-answer score as COMPLETE).
+const STORAGE_KEY = "roi_assessment_v2";
 // Apps Script Web App URL for the "Exhibition ROI Score — Leads" sheet — set once deployed (see apps-script-webhook.gs).
 const SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwns4G0nxq1Kk7kxpVEBoW6ZVJwgu0maVZMKgkWC1QIYKF74-GbGWUCTDq0NLeLFzTs/exec";
 
@@ -55,62 +57,6 @@ const QUESTIONS = [
     ],
   },
   {
-    id: "q5",
-    prompt: "For serious opportunities, was the approximate ₹ potential business value recorded?",
-    dimension: "opportunityValueTracking",
-    options: [
-      { label: "Yes — for almost every serious opportunity", score: 10 },
-      { label: "For some opportunities", score: 7 },
-      { label: "Rarely", score: 3 },
-      { label: "No", score: 0 },
-    ],
-  },
-  {
-    id: "q6",
-    prompt: "How quickly did meaningful follow-up begin after the exhibition?",
-    dimension: null,
-    options: [
-      { label: "Within 24–48 hours", score: 10 },
-      { label: "Within 3–5 days", score: 7 },
-      { label: "After approximately one week", score: 3 },
-      { label: "Follow-up was inconsistent", score: 0 },
-    ],
-  },
-  {
-    id: "q7",
-    prompt: "Once a quotation was sent, was there a defined follow-up process until the opportunity was Won, Lost or Deferred?",
-    dimension: "quotationFollowUp",
-    options: [
-      { label: "Yes", score: 10 },
-      { label: "Usually", score: 7 },
-      { label: "Depends on the salesperson", score: 3 },
-      { label: "No structured process", score: 0 },
-    ],
-  },
-  {
-    id: "q8",
-    prompt: "Are your highest-value exhibition prospects receiving different follow-up from general enquiries?",
-    dimension: null,
-    options: [
-      { label: "Yes — clearly", score: 10 },
-      { label: "Sometimes", score: 7 },
-      { label: "Very little differentiation", score: 3 },
-      { label: "Everyone receives roughly the same follow-up", score: 0 },
-    ],
-  },
-  {
-    id: "q9",
-    prompt: "Do you currently have exhibition enquiries or quotations that haven't converted yet?",
-    dimension: null,
-    qualification: true,
-    options: [
-      { label: "Yes — quite a few", score: 5 },
-      { label: "A few", score: 7 },
-      { label: "I'm not sure", score: 2 },
-      { label: "No", score: 10 },
-    ],
-  },
-  {
     id: "q10",
     prompt: "Do you calculate actual Exhibition ROI after every exhibition — total investment, opportunities generated, business converted, pipeline still open?",
     dimension: "roiMeasurement",
@@ -122,6 +68,9 @@ const QUESTIONS = [
     ],
   },
 ];
+
+const MAX_SCORE = QUESTIONS.length * 10;
+function pctScore(total) { return Math.round((total / MAX_SCORE) * 100); }
 
 const DIMENSION_LABELS = {
   leadCapture: "Lead Capture",
@@ -173,8 +122,11 @@ function categoryFor(score) {
 
 /* ---------------- state ---------------- */
 
+// question -> capture (score computed, still hidden) -> complete (score shown)
+const VALID_PHASES = ["question", "capture", "complete"];
+
 const state = loadState() || {
-  phase: "question", // question | capture | saved | complete
+  phase: "question",
   currentQuestion: 1,
   answers: {},
   lead: null,
@@ -188,8 +140,11 @@ const state = loadState() || {
 
 function loadState() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    // renderAssess() has no fallback branch, so an unrecognised phase would render a
+    // permanently blank card with no way out. Start over instead.
+    if (!s || !VALID_PHASES.includes(s.phase)) return null;
+    return s;
   } catch (e) {
     return null;
   }
@@ -243,11 +198,19 @@ function el(tag, cls, html) {
 const mount = $("#assessMount");
 
 function renderAssess() {
+  const heightBefore = mount.offsetHeight;
   mount.innerHTML = "";
-  if (state.phase === "question") return renderQuestion();
-  if (state.phase === "capture") return renderCapture();
-  if (state.phase === "saved") return renderSaved();
-  if (state.phase === "complete") return renderComplete();
+  if (state.phase === "question") renderQuestion();
+  else if (state.phase === "capture") renderCapture();
+  else if (state.phase === "complete") renderComplete();
+  // mount shrinking (e.g. the Q1 intro blurb disappearing on Q2) pulls everything below it up the page —
+  // pull scrollY up by the same amount so the viewport doesn't appear to jump down.
+  // Question-to-question only: the capture -> complete swap shrinks by ~400px and we
+  // deliberately scroll to the results instead of compensating.
+  if (state.phase === "question") {
+    const shrink = heightBefore - mount.offsetHeight;
+    if (shrink > 0) window.scrollBy({ top: -shrink, behavior: "instant" });
+  }
 }
 
 function renderIntroBlurb() {
@@ -264,10 +227,10 @@ function renderIntroBlurb() {
 function renderProgress(container, qNum) {
   const bar = el("div", "progress");
   const fill = el("div", "progress__bar");
-  fill.style.width = `${(qNum / 10) * 100}%`;
+  fill.style.width = `${(qNum / QUESTIONS.length) * 100}%`;
   bar.appendChild(fill);
   container.appendChild(bar);
-  container.appendChild(el("p", "progress__label", `Question ${qNum} of 10`));
+  container.appendChild(el("p", "progress__label", `Question ${qNum} of ${QUESTIONS.length}`));
 }
 
 function renderQuestion() {
@@ -284,15 +247,6 @@ function renderQuestion() {
     optsWrap.appendChild(btn);
   });
   card.appendChild(optsWrap);
-
-  if (q.qualification) {
-    const note = el("div", "q-note");
-    note.hidden = true;
-    note.innerHTML = `<strong>You may not need more leads yet.</strong> You may first need a stronger conversion system for the opportunities you already have.`;
-    card.appendChild(note);
-    card.dataset.qualNote = "1";
-  }
-
   mount.appendChild(card);
 }
 
@@ -307,45 +261,63 @@ function answerQuestion(q, opt) {
   state.answers[q.id] = { label: opt.label, score: opt.score, dimension: q.dimension };
   trackEvent(`${q.id}_completed`, { answer: opt.label });
   saveState();
-
-  if (q.id === "q9" && opt.score !== 10) {
-    const note = $(`.q-card[data-qual-note] .q-note`) || $(".q-note", mount);
-    if (note) {
-      note.hidden = false;
-      $$(".opt", mount).forEach((b) => b.disabled = true);
-      const evtLabel = state.answers.q9.label;
-      const matched = $$(".opt", mount).find((b) => b.textContent === evtLabel);
-      if (matched) matched.classList.add("opt--selected");
-      setTimeout(advanceAfterQuestion, 1400);
-      return;
-    }
-  }
   advanceAfterQuestion();
 }
 
 function $$(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
 
+// Iterates QUESTIONS rather than state.answers so a stale key from an older
+// schema can't push the total past MAX_SCORE (and pctScore past 100).
+function computeScore() {
+  let total = 0;
+  const dims = {};
+  QUESTIONS.forEach((q) => {
+    const a = state.answers[q.id];
+    if (!a) return;
+    total += a.score;
+    if (a.dimension) dims[a.dimension] = a.score;
+  });
+  return { total, dims };
+}
+
 function advanceAfterQuestion() {
-  if (state.currentQuestion === 2) {
+  if (state.currentQuestion === QUESTIONS.length) {
+    // Score is computed here but stays hidden until the lead form is submitted.
+    const { total } = computeScore();
+    state.score = total;
+    state.category = categoryFor(pctScore(total)).key;
     state.phase = "capture";
+    trackEvent("assessment_completed", { score: total });
     saveState();
     return renderAssess();
-  }
-  if (state.currentQuestion === 10) {
-    finishAssessment();
-    return;
   }
   state.currentQuestion += 1;
   saveState();
   renderAssess();
 }
 
+// Reveals an already-computed score. Called after the gate is passed, and on
+// reload for visitors who had already passed it.
+function revealResults() {
+  const { total, dims } = computeScore();
+  renderResults(total, dims);
+  document.getElementById("results").hidden = false;
+  document.getElementById("qualifySection").hidden = false;
+  renderQualify();
+  refreshPrimaryCtas();
+  syncStickyCta();
+}
+
 function renderCapture() {
+  trackEvent("gate_shown", { score: state.score });
   const card = el("div", "capture-card");
-  card.innerHTML = `
-    <h3>Good. We're already seeing a pattern.</h3>
-    <p>Let's calculate your complete Exhibition ROI Score. Enter your details so we can save your assessment and show your complete score and recommendations.</p>
-  `;
+  // Full progress bar: the gate should read as "you're done, claim it" rather than
+  // as one more question.
+  renderProgress(card, QUESTIONS.length);
+  card.insertAdjacentHTML("beforeend", `
+    <h3>Your Exhibition ROI Score is ready.</h3>
+    <p>All ${QUESTIONS.length} answers are in. Tell us where to send your score and we'll unlock your full diagnostic — your scorecard, your biggest revenue leak, and what to fix first.</p>
+  `);
   const form = el("form", "capture-form");
   form.innerHTML = `
     <div class="field">
@@ -361,10 +333,16 @@ function renderCapture() {
       <input id="lead-whatsapp" type="tel" placeholder="+91 98765 43210" required>
     </div>
     <p class="capture-error" id="captureError"></p>
-    <button type="submit" class="btn btn--red btn--block">Continue My ROI Score →</button>
-    <p class="hero__micro" style="color:rgba(255,255,255,.55); text-align:center;">Your assessment will continue from Question 3.</p>
+    <button type="submit" class="btn btn--red btn--block">Show My Exhibition ROI Score →</button>
     <p class="consent">By continuing, you agree to receive your Exhibition ROI result and relevant follow-up on WhatsApp.</p>
   `;
+  // Set values rather than interpolating into innerHTML — state.lead comes from
+  // localStorage and would otherwise be an injection vector into our own page.
+  if (state.lead) {
+    $("#lead-name", form).value = state.lead.name || "";
+    $("#lead-company", form).value = state.lead.company || "";
+    $("#lead-whatsapp", form).value = state.lead.whatsapp || "";
+  }
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const name = $("#lead-name", form).value.trim();
@@ -374,74 +352,42 @@ function renderCapture() {
       $("#captureError", form).textContent = "Please fill in all fields with a valid WhatsApp number.";
       return;
     }
+    // Late fallback: these live in the hero and are normally harvested at Q1, but the
+    // visitor may have filled them in afterwards.
+    if (state.investment === null) {
+      const invEl = document.getElementById("rc-invest");
+      state.investment = invEl && invEl.value ? Number(invEl.value) : null;
+    }
+    if (state.confirmedBusiness === null) {
+      const bizEl = document.getElementById("rc-business");
+      state.confirmedBusiness = bizEl && bizEl.value ? Number(bizEl.value) : null;
+    }
     state.lead = { name, company, whatsapp };
     trackEvent("lead_captured", state.lead);
     submitLead({
       ...state.lead,
-      q1: state.answers.q1?.label,
-      q2: state.answers.q2?.label,
+      answers: Object.fromEntries(Object.entries(state.answers).map(([k, v]) => [k, v.label])),
       investment: state.investment,
       confirmedBusiness: state.confirmedBusiness,
-      assessmentStatus: "INCOMPLETE",
-      lastQuestionCompleted: 2,
+      totalScore: state.score,
+      resultCategory: state.category,
+      assessmentStatus: "COMPLETE",
+      lastQuestionCompleted: QUESTIONS.length,
       utmSource: new URLSearchParams(location.search).get("utm_source") || null,
       utmCampaign: new URLSearchParams(location.search).get("utm_campaign") || null,
       landingPageSource: document.referrer || null,
     });
-    state.phase = "saved";
+    state.phase = "complete";
     saveState();
     renderAssess();
-    setTimeout(() => {
-      state.phase = "question";
-      state.currentQuestion = 3;
-      saveState();
-      renderAssess();
-    }, 1100);
+    revealResults();
+    trackEvent("score_viewed", { score: state.score });
+    requestAnimationFrame(() => {
+      document.getElementById("results").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   });
   card.appendChild(form);
   mount.appendChild(card);
-}
-
-function renderSaved() {
-  const wrap = el("div", "saved-flash");
-  wrap.innerHTML = `
-    <div class="saved-flash__check">✓</div>
-    <h3>Assessment Saved</h3>
-    <p style="color:rgba(255,255,255,.7); margin-top:8px;">You're only a few questions away from your complete Exhibition ROI Score.</p>
-  `;
-  mount.appendChild(wrap);
-}
-
-function finishAssessment() {
-  let total = 0;
-  const dims = {};
-  Object.entries(state.answers).forEach(([id, a]) => {
-    total += a.score;
-    if (a.dimension) dims[a.dimension] = a.score;
-  });
-  state.score = total;
-  state.category = categoryFor(total).key;
-  state.phase = "complete";
-
-  submitLead({
-    ...state.lead,
-    answers: Object.fromEntries(Object.entries(state.answers).map(([k, v]) => [k, v.label])),
-    investment: state.investment,
-    confirmedBusiness: state.confirmedBusiness,
-    totalScore: total,
-    resultCategory: state.category,
-    assessmentStatus: "COMPLETE",
-  });
-  trackEvent("assessment_completed", { score: total });
-  trackEvent("score_viewed", { score: total });
-
-  saveState();
-  renderAssess();
-  renderResults(total, dims);
-  document.getElementById("results").hidden = false;
-  document.getElementById("qualifySection").hidden = false;
-  renderQualify();
-  refreshPrimaryCtas();
 }
 
 function renderComplete() {
@@ -460,15 +406,16 @@ function renderComplete() {
 /* ---------------- results ---------------- */
 
 function renderResults(total, dims) {
-  const cat = categoryFor(total);
+  const pct = pctScore(total);
+  const cat = categoryFor(pct);
   const root = $("#resultsMount");
   root.innerHTML = "";
 
   const hero = el("div", "score-hero");
   hero.innerHTML = `
     <p class="eyebrow">Your Exhibition ROI Score</p>
-    <div class="score-gauge" style="--pct:${total}">
-      <div class="score-gauge__num">${total}<span>/ 100</span></div>
+    <div class="score-gauge" style="--pct:${pct}">
+      <div class="score-gauge__num">${total}<span>/ ${MAX_SCORE}</span></div>
     </div>
     <span class="score-hero__cat">${cat.label}</span>
     <p class="score-hero__line">${cat.headline}</p>
@@ -522,7 +469,7 @@ function renderResults(total, dims) {
 
   const shareWrap = el("div", "");
   shareWrap.style.marginTop = "18px";
-  const waShareUrl = `https://wa.me/?text=${encodeURIComponent(`I just checked my Exhibition ROI Score — ${total}/100. Worth checking yours too: ${location.href}`)}`;
+  const waShareUrl = `https://wa.me/?text=${encodeURIComponent(`I just checked my Exhibition ROI Score — ${total}/${MAX_SCORE}. Worth checking yours too: ${location.href}`)}`;
   shareWrap.innerHTML = `<p style="font-size:13.5px; color:var(--ink-soft);">Know another exhibitor who should check this? <a href="${waShareUrl}" target="_blank" rel="noopener" style="color:var(--red); font-weight:700;">Share on WhatsApp</a></p>`;
   actions.appendChild(shareWrap);
 
@@ -597,17 +544,22 @@ const reviewModal = $("#reviewModal");
 const reviewModalBody = $("#reviewModalBody");
 
 function openReviewModal() {
-  if (!state.score) {
+  // Phase, not score: a legitimate score of 0 is falsy, and during "capture" the score
+  // exists but has not been unlocked yet.
+  if (state.phase !== "complete") {
+    const atGate = state.phase === "capture";
     reviewModalBody.innerHTML = `
-      <h3 id="reviewModalTitle">Finish your Exhibition ROI Score first</h3>
-      <p>We review actual scores, not blind requests. It takes about 3 minutes and your first two answers are already saved.</p>
-      <a class="btn btn--red btn--block" href="#assessment" id="reviewGoToAssessment">Continue My Assessment →</a>
+      <h3 id="reviewModalTitle">${atGate ? "You're one step away" : "Finish your Exhibition ROI Score first"}</h3>
+      <p>${atGate
+        ? "Your answers are in — enter your details to unlock your score, then request your review."
+        : "We review actual scores, not blind requests. It takes about 2 minutes."}</p>
+      <a class="btn btn--red btn--block" href="#assessment" id="reviewGoToAssessment">${atGate ? "Unlock My Score →" : "Continue My Assessment →"}</a>
     `;
     $("#reviewGoToAssessment", reviewModalBody).addEventListener("click", () => closeReviewModal());
   } else {
     reviewModalBody.innerHTML = `
       <h3 id="reviewModalTitle">Request My Exhibition ROI Review</h3>
-      <p>Your score: <strong>${state.score}/100 — ${categoryFor(state.score).label}</strong></p>
+      <p>Your score: <strong>${state.score}/${MAX_SCORE} — ${categoryFor(pctScore(state.score)).label}</strong></p>
       <div class="field">
         <label>What would you most like help with?</label>
         <div class="radio-row" id="helpOptions">
@@ -620,7 +572,7 @@ function openReviewModal() {
       const help = (reviewModalBody.querySelector('input[name="help"]:checked') || {}).value || null;
       submitLead({ ...(state.lead || {}), totalScore: state.score, helpRequired: help, roiReviewRequested: true });
       trackEvent("roi_review_requested", { help });
-      const waMsg = `Hi, I just completed the Exhibition ROI Score at roi.brandologist.in. My score is ${state.score}/100 and I'd like to discuss my Exhibition ROI Review.`;
+      const waMsg = `Hi, I just completed the Exhibition ROI Score at roi.brandologist.in. My score is ${state.score}/${MAX_SCORE} and I'd like to discuss my Exhibition ROI Review.`;
       reviewModalBody.innerHTML = `
         <h3 id="reviewModalTitle">Request Received ✓</h3>
         <p>We've saved your Exhibition ROI Score and request. Our team can review the information you've shared before contacting you.</p>
@@ -639,39 +591,93 @@ document.addEventListener("click", (e) => {
 $("#reviewModalClose").addEventListener("click", closeReviewModal);
 reviewModal.addEventListener("click", (e) => { if (e.target === reviewModal) closeReviewModal(); });
 
-/* ---------------- playbook notify form ---------------- */
+/* ---------------- playbook early-access form ---------------- */
 
 const playbookForm = document.getElementById("playbookForm");
+const PB_MODES = {
+  phone: { label: "WhatsApp number", placeholder: "e.g. +91 98765 43210", type: "tel", inputmode: "tel", autocomplete: "tel" },
+  email: { label: "Email address", placeholder: "e.g. you@company.com", type: "email", inputmode: "email", autocomplete: "email" },
+};
+let pbMode = "phone";
+
+function pbShowSuccess() {
+  const wrap = document.getElementById("playbookFormWrap");
+  if (wrap) {
+    wrap.innerHTML = `<p class="playbook-form__success">You're on the early-access list. We'll be in touch the moment The Exhibition ROI Playbook is ready.</p>`;
+  }
+}
+
 if (playbookForm) {
+  const input = document.getElementById("pb-contact");
+  const labelEl = document.getElementById("pbContactLabel");
+
+  // One labelled input rather than two bare boxes — it was never visually obvious
+  // that only one of the old two fields was needed.
+  playbookForm.querySelectorAll(".pb-toggle__btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      pbMode = btn.dataset.mode;
+      const cfg = PB_MODES[pbMode];
+      playbookForm.querySelectorAll(".pb-toggle__btn").forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", String(on));
+      });
+      input.type = cfg.type;
+      input.placeholder = cfg.placeholder;
+      input.inputMode = cfg.inputmode;
+      input.autocomplete = cfg.autocomplete;
+      labelEl.textContent = cfg.label;
+      input.value = "";
+      document.getElementById("pbFormError").textContent = "";
+      input.focus();
+    });
+  });
+
   playbookForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const phone = document.getElementById("pb-phone").value.trim();
-    const email = document.getElementById("pb-email").value.trim();
+    const value = input.value.trim();
     const errorEl = document.getElementById("pbFormError");
-    if (!phone && !email) {
-      errorEl.textContent = "Enter a phone number or an email address.";
+    if (!value) {
+      // not lowercased — "WhatsApp" is a brand name and must keep its casing
+      errorEl.textContent = `Enter your ${PB_MODES[pbMode].label}.`;
+      return;
+    }
+    if (pbMode === "phone" && value.replace(/\D/g, "").length < 8) {
+      errorEl.textContent = "That doesn't look like a valid phone number.";
+      return;
+    }
+    if (pbMode === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      errorEl.textContent = "That doesn't look like a valid email address.";
       return;
     }
     errorEl.textContent = "";
+    const phone = pbMode === "phone" ? value : null;
+    const email = pbMode === "email" ? value : null;
     state.bookWaitlist = true;
     saveState();
-    trackEvent("book_waitlist_joined", { hasPhone: !!phone, hasEmail: !!email });
-    submitLead({ ...(state.lead || {}), bookWaitlist: true, bookPhone: phone || null, bookEmail: email || null });
-
-    const wrap = document.getElementById("playbookFormWrap");
-    wrap.innerHTML = `
-      <p class="playbook-form__success">You're on the list! We'll message you the moment The Exhibition ROI Playbook launches.</p>
-    `;
+    trackEvent("book_early_access_requested", { mode: pbMode });
+    // payload keys kept as-is so the existing sheet columns keep working
+    submitLead({ ...(state.lead || {}), bookWaitlist: true, bookPhone: phone, bookEmail: email });
+    pbShowSuccess();
   });
+
+  // state.bookWaitlist was persisted but never read back, so a returning visitor
+  // saw an empty form as though they'd never asked.
+  if (state.bookWaitlist) pbShowSuccess();
 }
 
 /* ---------------- CTA relabeling ---------------- */
 
 function refreshPrimaryCtas() {
-  const isDone = !!state.score;
+  const isDone = state.phase === "complete";
   document.querySelectorAll(".js-cta-primary").forEach((node) => {
     if (isDone) {
-      node.textContent = "Request My Exhibition ROI Review →";
+      // Keep the full/short label pair rather than setting textContent — a flat string
+      // destroys the spans the header button relies on and the long label then
+      // overflows the viewport on small screens.
+      node.innerHTML =
+        '<span class="cta-text-full">Request My Exhibition ROI Review →</span>' +
+        '<span class="cta-text-short">Request My Review →</span>';
       node.classList.remove("js-cta-primary");
       node.classList.add("js-open-review");
       if (node.tagName === "A") node.removeAttribute("href");
@@ -706,30 +712,31 @@ document.addEventListener("keydown", (e) => {
 const stickyCta = $("#stickyCta");
 const hero = $(".hero");
 const assessSection = $("#assessment");
-const io = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.target === hero) {
-      stickyCta.classList.toggle("is-visible", !entry.isIntersecting && state.phase !== "question" && state.phase !== "capture");
-    }
-  });
-}, { threshold: 0 });
-io.observe(hero);
+// Tracked as state rather than read inside the observer: the phase now flips far down
+// the page, long after .hero last intersected, so an observer-only check would leave
+// the mobile CTA hidden until the visitor scrolled back to the top.
+let heroOffScreen = false;
+let assessOnScreen = false;
+
+function syncStickyCta() {
+  const wantsCta = state.phase !== "question" && state.phase !== "capture";
+  stickyCta.classList.toggle("is-visible", heroOffScreen && !assessOnScreen && wantsCta);
+}
+
 new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) stickyCta.classList.remove("is-visible");
-  });
+  entries.forEach((entry) => { heroOffScreen = !entry.isIntersecting; });
+  syncStickyCta();
+}, { threshold: 0 }).observe(hero);
+
+new IntersectionObserver((entries) => {
+  entries.forEach((entry) => { assessOnScreen = entry.isIntersecting; });
+  syncStickyCta();
 }, { threshold: 0.2 }).observe(assessSection);
 
 /* ---------------- init ---------------- */
 
 trackEvent("landing_page_view", {});
 renderAssess();
-if (state.score) {
-  const dims = {};
-  Object.values(state.answers).forEach((a) => { if (a.dimension) dims[a.dimension] = a.score; });
-  document.getElementById("results").hidden = false;
-  document.getElementById("qualifySection").hidden = false;
-  renderResults(state.score, dims);
-  renderQualify();
-  refreshPrimaryCtas();
-}
+// Phase, not score: during "capture" a score exists but has not been unlocked, so
+// keying this off state.score would let a page reload walk straight past the gate.
+if (state.phase === "complete") revealResults();

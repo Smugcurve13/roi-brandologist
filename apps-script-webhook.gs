@@ -10,6 +10,11 @@
  */
 var SHEET_ID = "1lu3CwWG3J6bou7HGt8yreokRh4Id0H1jCljCfUc-KRM";
 
+// Preserves 0 (and false) while still mapping null/undefined to an empty cell.
+function blank(v) {
+  return v === null || v === undefined ? "" : v;
+}
+
 function doPost(e) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
   var data = JSON.parse(e.postData.contents);
@@ -29,12 +34,14 @@ function doPost(e) {
     q8: (data.answers && data.answers.q8) || "",
     q9: (data.answers && data.answers.q9) || "",
     q10: (data.answers && data.answers.q10) || "",
-    investment: data.investment || "",
-    confirmed_business: data.confirmedBusiness || "",
-    total_score: data.totalScore || "",
+    // `|| ""` would blank a legitimate 0 — and an all-zero score is the highest-intent
+    // lead there is. Only null/undefined should fall back to an empty cell.
+    investment: blank(data.investment),
+    confirmed_business: blank(data.confirmedBusiness),
+    total_score: blank(data.totalScore),
     result_category: data.resultCategory || "",
     assessment_status: data.assessmentStatus || "",
-    last_question_completed: data.lastQuestionCompleted || "",
+    last_question_completed: blank(data.lastQuestionCompleted),
     business_type: (data.qualification && data.qualification.businessType) || "",
     turnover_band: (data.qualification && data.qualification.turnover) || "",
     last_exhibition: (data.qualification && data.qualification.lastExhibition) || "",
