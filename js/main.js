@@ -733,6 +733,39 @@ new IntersectionObserver((entries) => {
   syncStickyCta();
 }, { threshold: 0.2 }).observe(assessSection);
 
+
+/* ---------------- shared exhibition and logo carousels ---------------- */
+
+const CAROUSEL_SPEED = 4472;
+
+if (window.Swiper) {
+  new Swiper(".exhibition-swiper", {
+    loop: true,
+    slidesPerView: "auto",
+    spaceBetween: 16,
+    speed: CAROUSEL_SPEED,
+    allowTouchMove: true,
+    freeMode: { enabled: true, momentum: false },
+    autoplay: { delay: 0, disableOnInteraction: false, pauseOnMouseEnter: false, reverseDirection: true },
+    breakpoints: {
+      0: { slidesPerView: 1.35, spaceBetween: 12 },
+      801: { slidesPerView: 3.25, spaceBetween: 16 },
+      1200: { slidesPerView: 4, spaceBetween: 16 },
+      1600: { slidesPerView: 4.5, spaceBetween: 16 },
+    },
+  });
+
+  new Swiper(".logo-swiper", {
+    loop: true,
+    slidesPerView: "auto",
+    spaceBetween: 20,
+    speed: CAROUSEL_SPEED,
+    allowTouchMove: true,
+    freeMode: { enabled: true, momentum: false },
+    autoplay: { delay: 0, disableOnInteraction: false, pauseOnMouseEnter: false, reverseDirection: true },
+  });
+}
+
 /* ---------------- init ---------------- */
 
 trackEvent("landing_page_view", {});

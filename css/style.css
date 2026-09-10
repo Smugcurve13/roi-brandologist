@@ -100,9 +100,12 @@ button{ font-family: inherit; }
   border-bottom: 1px solid var(--line);
 }
 .site-header__row{
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 14px 16px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center; gap: 12px; padding: 14px 16px;
 }
+.site-header__row > .brand-mark{ grid-column: 1; justify-self: start; }
+.site-header__row > .header__label{ grid-column: 2; justify-self: center; }
+.site-header__row > .btn{ grid-column: 3; justify-self: end; }
 .brand-mark{
   display: inline-flex;
   align-items: center;
@@ -615,65 +618,20 @@ button{ font-family: inherit; }
 }
 .proof-scrapbook img{ width: 100%; border-radius: 6px; box-shadow: 0 14px 28px -18px rgba(0,0,0,0.35); display: block; }
 
-/* ---------- logo marquee ---------- */
-.marquee{
-  position: relative;
-  margin-top: 8px; overflow: hidden;
-}
-/* Edge fades as static gradient layers instead of mask-image: a mask over a
-   continuously animating subtree forces a masked composite every frame on iOS.
-   Only valid because the parent .section--alt is a solid --bg-alt. */
-.marquee::before,
-.marquee::after{
-  content: ""; position: absolute; top: 0; bottom: 0; width: 8%;
-  z-index: 2; pointer-events: none;
-}
-.marquee::before{ left: 0;  background: linear-gradient(90deg, var(--bg-alt), rgba(241,238,231,0)); }
-.marquee::after{ right: 0; background: linear-gradient(270deg, var(--bg-alt), rgba(241,238,231,0)); }
-
-.marquee__track{
-  display: flex; align-items: center; width: max-content;
-  animation: marquee-scroll 24s linear infinite;
-}
-/* No `gap`: gap sits between all 60 children, so the track measures
-   2*sum(w) + 59*gap while the true loop distance is sum(w) + 30*gap —
-   translateX(-50%) then lands half a gap (18px) short every cycle, which is
-   the stutter. margin-right gives each item its own trailing gap, making the
-   track 2*(sum(w) + 30*gap) so -50% is exact. */
-.marquee__track img{
-  height: 130px; width: auto; aspect-ratio: 2 / 1; margin-right: 36px;
-  border-radius: 10px; box-shadow: 0 12px 26px -14px rgba(0,0,0,0.3); flex-shrink: 0;
-}
-@keyframes marquee-scroll{
-  from{ transform: translate3d(0, 0, 0); }
-  to{ transform: translate3d(-50%, 0, 0); }
-}
-/* Deliberately NOT pausing this offscreen via IntersectionObserver. That is the
-   textbook optimisation, but any missed "entering" callback leaves the strip
-   frozen — which is the exact stuck-carousel bug this section had to fix. An
-   always-running transform animation is cheap once the mask is gone; a stuck
-   carousel is not recoverable. Also no `will-change`: the track is ~13,000px
-   wide and pinning a layer that size costs more than it saves.
-   ponytail: always-on animation, revisit only if profiling shows it matters. */
-
+/* ---------- shared Swiper carousels ---------- */
+.exhibition-carousel{ position: relative; z-index: 1; padding: 0; }
+.exhibition-swiper, .logo-swiper{ width: 100%; overflow: hidden; }
+.exhibition-swiper .swiper-wrapper, .logo-swiper .swiper-wrapper{ transition-timing-function: linear; }
+.exhibition-swiper .swiper-slide{ height: 300px; overflow: hidden; background: #e6e0d7; border: 1px solid rgba(179,19,28,0.18); }
+.exhibition-swiper img{ display: block; width: 100%; height: 100%; object-fit: cover; }
+.logo-swiper{ margin-top: 8px; padding: 0 0 88px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.logo-swiper .swiper-slide{ width: 204px; height: 130px; }
+.logo-card{ display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 12px; background: #fff; border-radius: 10px; box-shadow: 0 12px 26px -14px rgba(0,0,0,0.3); }
+.logo-card img{ display: block; width: 100%; height: 100%; object-fit: contain; }
 @media (max-width: 640px){
-  .marquee__track img{ height: 92px; }
-  /* 30*184 + 30*36 = 6600px per cycle; 6600 / 370px-per-sec ≈ 18s keeps the
-     scroll speed identical to desktop. */
-  .marquee__track{ animation-duration: 18s; }
-}
-@media (prefers-reduced-motion: reduce){
-  /* Must stay `animation: none`, never `paused` — the global
-     *{ animation-duration: 0.01ms !important } rule at the top of this file
-     would otherwise spin a merely-paused animation at ~100kHz on resume. */
-  .marquee__track{ animation: none; }
-  /* overflow belongs on .marquee — .marquee__track is width:max-content and
-     can never overflow itself, so it produced no scrollbar and left 28 of the
-     30 logos unreachable. */
-  .marquee{ overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
-  .marquee::before, .marquee::after{ display: none; }
-  /* duplicate set is decorative — don't make manual scrollers pass it twice */
-  .marquee__track img[aria-hidden="true"]{ display: none; }
+  .exhibition-swiper .swiper-slide{ height: 50vw; }
+  .logo-swiper{ padding-bottom: 72px; }
+  .logo-swiper .swiper-slide{ width: 156px; height: 100px; }
 }
 .proof-close{ max-width: 640px; margin: 48px auto 0; text-align: center; }
 .proof-close p{ font-family: var(--font-display); font-size: 21px; font-weight: 600; }
