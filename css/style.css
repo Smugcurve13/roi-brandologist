@@ -136,20 +136,17 @@ button{ font-family: inherit; }
 .eyebrow--muted{ color: var(--ink-soft); }
 
 /* ---------- hero ---------- */
-/* No photo here any more — the exhibition carousel directly above carries the
-   imagery, so a second photo underneath it was doing the same job twice. Stays
-   dark: the display type, the leak bars and the eyebrow are all built for a
-   dark ground, and it separates the hero cleanly from the carousel. */
+/* No photo here — the exhibition carousel above carries the imagery. White
+   ground so the hero reads as part of the page rather than a dark slab, with
+   the type carrying the weight instead of an image. */
 .hero{
   position: relative;
   isolation: isolate;
-  color: #fff;
+  background: #fff;
+  color: var(--ink);
   padding: 96px 0 104px;
   overflow: hidden;
-  /* very slight lift off flat black so the block doesn't read as a dead slab */
-  background:
-    radial-gradient(120% 90% at 50% 0%, #1d1d1d 0%, var(--ink) 62%),
-    var(--ink);
+  border-bottom: 1px solid var(--line);
 }
 .hero__inner{ max-width: 900px; margin: 0 auto; text-align: center; position: relative; }
 .hero__title{
@@ -160,15 +157,15 @@ button{ font-family: inherit; }
   letter-spacing: -0.015em;
   text-wrap: balance;
 }
-.hero__title em{ font-style: italic; color: #f2b9bc; }
+.hero__title em{ font-style: italic; color: var(--red); }
 .hero__lede{
   margin: 22px auto 0;
   max-width: 58ch;
   font-size: 17.5px;
-  color: rgba(255,255,255,0.86);
+  color: var(--ink-soft);
 }
 .hero__actions{ margin-top: 32px; }
-.hero__micro{ margin-top: 14px; font-size: 13.5px; color: rgba(255,255,255,0.72); font-weight: 600; }
+.hero__micro{ margin-top: 14px; font-size: 13.5px; color: var(--ink-soft); font-weight: 600; }
 
 /* pipeline leak visual */
 .leakflow{
@@ -182,23 +179,23 @@ button{ font-family: inherit; }
 .leakflow__stage{ display: flex; flex-direction: column; gap: 9px; }
 .leakflow__label{
   font-size: 11.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
-  color: rgba(255,255,255,0.66); line-height: 1.35;
+  color: var(--ink-soft); line-height: 1.35;
   /* reserve two lines so a wrapping label can't push its bar out of line with the rest */
   min-height: 2.7em;
 }
 .leakflow__bar{
-  height: 10px; border-radius: 999px; background: rgba(255,255,255,0.9);
+  height: 10px; border-radius: 999px; background: var(--ink);
   width: var(--fill); min-width: 14px;
 }
 .leakflow__bar--thin{ background: var(--red); }
 .leakflow__stage--gap{ position: relative; }
 .leakflow__stage--gap::before{
   content: ""; position: absolute; left: -10px; top: 0; bottom: 18px;
-  border-left: 1px dashed rgba(242,185,188,0.55);
+  border-left: 1px dashed rgba(179,19,28,0.45);
 }
 .leakflow__note{
   font-family: var(--font-display); font-style: italic;
-  font-size: 12.5px; color: #f2b9bc;
+  font-size: 12.5px; color: var(--red);
 }
 @media (max-width: 700px){
   /* tighter so the CTA lands as close to the first screen as the headline allows */
