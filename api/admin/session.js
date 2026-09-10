@@ -1,5 +1,5 @@
 import { currentUser, authConfigured, clearCookie } from "../../lib/auth.js";
-import { isConfigured as dbConfigured, TABLES } from "../../lib/db.js";
+import { isConfigured as dbConfigured, connectionVar, TABLES } from "../../lib/db.js";
 
 // Lets the admin page decide what to render on load without exposing anything
 // to a signed-out visitor beyond "you are signed out".
@@ -14,6 +14,9 @@ export default function handler(req, res) {
     email: user ? user.email : null,
     authConfigured,
     dbConfigured,
+    // which connection variable was found — the name only, never the value.
+    // Makes "why is it still 503" answerable without digging through logs.
+    connectionVar,
     tables: Object.entries(TABLES).map(([key, t]) => ({ key, label: t.label })),
   });
 }
