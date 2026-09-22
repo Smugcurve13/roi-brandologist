@@ -604,7 +604,7 @@ function openReviewModal() {
       <p>${atGate
         ? "Your answers are in — enter your details to unlock your score, then request your review."
         : "We review actual scores, not blind requests. It takes about 2 minutes."}</p>
-      <a class="btn btn--red btn--block" href="#assessment" id="reviewGoToAssessment">${atGate ? "Unlock My Score →" : "Continue My Assessment →"}</a>
+      <a class="btn btn--red btn--block" href="#exhibition-roi-assessment" id="reviewGoToAssessment">${atGate ? "Unlock My Score →" : "Continue My Assessment →"}</a>
     `;
     $("#reviewGoToAssessment", reviewModalBody).addEventListener("click", () => closeReviewModal());
   } else {
@@ -814,7 +814,7 @@ document.addEventListener("keydown", (e) => {
 
 const stickyCta = $("#stickyCta");
 const hero = $(".hero");
-const assessSection = $("#assessment");
+const assessSection = $("#exhibition-roi-assessment");
 // Tracked as state rather than read inside the observer: the phase now flips far down
 // the page, long after .hero last intersected, so an observer-only check would leave
 // the mobile CTA hidden until the visitor scrolled back to the top.
