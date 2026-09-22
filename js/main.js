@@ -642,6 +642,43 @@ document.addEventListener("click", (e) => {
 $("#reviewModalClose").addEventListener("click", closeReviewModal);
 reviewModal.addEventListener("click", (e) => { if (e.target === reviewModal) closeReviewModal(); });
 
+/* ---------------- assessment anchor ---------------- */
+
+const ASSESSMENT_HASH = "#exhibition-roi-assessment";
+
+function landOnAssessment() {
+  const section = document.getElementById("exhibition-roi-assessment");
+  if (!section) return;
+
+  // Native hash jumps inherit html{scroll-behavior:smooth} on some engines and
+  // can be interrupted by late layout shifts. Land synchronously below the header.
+  const root = document.documentElement;
+  const previousScrollBehavior = root.style.scrollBehavior;
+  root.style.scrollBehavior = "auto";
+  const headerHeight = document.querySelector(".site-header")?.offsetHeight || 0;
+  window.scrollTo(0, Math.max(0, section.getBoundingClientRect().top + window.scrollY - headerHeight - 12));
+  root.style.scrollBehavior = previousScrollBehavior;
+}
+
+function handleAssessmentHash() {
+  if (location.hash.toLowerCase() !== ASSESSMENT_HASH) return;
+  landOnAssessment();
+  requestAnimationFrame(landOnAssessment);
+}
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest(`a[href="${ASSESSMENT_HASH}"]`)) return;
+  event.preventDefault();
+  if (location.hash !== ASSESSMENT_HASH) history.pushState(null, "", ASSESSMENT_HASH);
+  landOnAssessment();
+});
+
+if (location.hash.toLowerCase() === ASSESSMENT_HASH && "scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+window.addEventListener("hashchange", handleAssessmentHash);
+window.addEventListener("load", handleAssessmentHash);
+
 /* ---------------- playbook early-access form ---------------- */
 
 // #playbook is the shareable deep link for the book lead magnet — it can be sent
